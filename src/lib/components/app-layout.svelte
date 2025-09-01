@@ -6,10 +6,10 @@
     import {onMount} from "svelte";
     import JsTree from "$lib/components/JsTree.svelte";
     import {tryParseJson, tryRender} from "../utils/utils";
-    // import { createIcons, icons } from 'lucide';
+
 
     let sideOpen = true; // initial state
-    let codeOpen = false; // initial state
+    let dataOpen = false; // initial state
 
     let jsonSourceCode = $state("");
     let ejsSourceCode = $state("");
@@ -22,42 +22,42 @@
     let isVisibleDataPane = $state(true);
 
     let refSidebarHandle = null
-    let refCodeHandle = null
+    let refDataPaneHandle = null
     let sidebarPane: ReturnType<typeof Resizable.Pane>;
-    let codePane: ReturnType<typeof Resizable.Pane>;
+    let dataPane: ReturnType<typeof Resizable.Pane>;
     let isSidebarPaneCollapsed = $state(!sideOpen);
-    let isCodePaneCollapsed = $state(!codeOpen);
+    let isDataPaneCollapsed = $state(!dataOpen);
     let editorCodeInstance
 
-    function handlePaneCollapse() {
+    function handleSidebarPaneCollapse() {
         isSidebarPaneCollapsed = true;
     }
 
-    function handlePaneExpand() {
+    function handleSidebarPaneExpand() {
         isSidebarPaneCollapsed = false;
     }
 
-    function handleCodePaneCollapse() {
-        isCodePaneCollapsed = true;
+    function handleDataPaneCollapse() {
+        isDataPaneCollapsed = true;
     }
 
-    function handleCodePaneExpand() {
-        isCodePaneCollapsed = false;
+    function handleDataPaneExpand() {
+        isDataPaneCollapsed = false;
     }
 
-    function addListnerCodePane() {
-        refCodeHandle.addEventListener('dblclick', () => {
-            if (!isCodePaneCollapsed) {
-                return codePane.collapse();
+    function addListnerDataPane() {
+        refDataPaneHandle.addEventListener('dblclick', () => {
+            if (!isDataPaneCollapsed) {
+                return dataPane.collapse();
             }
-            if (isCodePaneCollapsed) {
-                codePane.expand();
+            if (isDataPaneCollapsed) {
+                dataPane.expand();
             }
         })
     }
 
     function addListnerSidebar() {
-        console.log("add listner function called")
+        console.log("add sidebar listner function called")
         refSidebarHandle.addEventListener('dblclick', () => {
 
             if (!isSidebarPaneCollapsed) {
@@ -72,7 +72,7 @@
 
     onMount(() => {
         addListnerSidebar()
-        addListnerCodePane()
+        addListnerDataPane()
     });
 
     $effect(() => {
@@ -104,32 +104,32 @@
     <Button variant="outline" onclick={() => ( isVisibleSidebarPane = !isVisibleSidebarPane)}>
         {isVisibleSidebarPane ? "Hide" : "Show"} Side Bar
     </Button>
-    <Button variant="outline" onclick={() => (isVisibleCodePane = !isVisibleCodePane)}>
-        {isVisibleCodePane ? "Hide" : "Show"} Code Pane
-    </Button>
     <Button variant="outline" onclick={() => (isVisibleDataPane = !isVisibleDataPane)}>
         {isVisibleDataPane ? "Hide" : "Show"} Data Pane
     </Button>
+    <Button variant="outline" onclick={() => (isVisibleCodePane = !isVisibleCodePane)}>
+        {isVisibleCodePane ? "Hide" : "Show"} Ejs Pane
+    </Button>
     <Button variant="outline" onclick={() => (isVisibleResultPane = !isVisibleResultPane)}>
-        {isVisibleResultPane ? "Hide" : "Show"} Results Pane
+        {isVisibleResultPane ? "Hide" : "Show"} Result Pane
     </Button>
     <Button variant="outline" onclick={getActive}>
         Get Tab Content
     </Button>
 </div>
-<!--App layout using Resizable Pane and Sidebar components-->
 
+<!--App layout using Resizable Pane and Sidebar components-->
 <div class="flex h-[95vh] w-full flex-col gap-4 sm:flex-row">
     <Resizable.PaneGroup direction="horizontal">
         <!--        Sidebar Pane-->
         <Resizable.Pane
-                defaultSize={15}
+                defaultSize={20}
                 hidden={!isVisibleSidebarPane}
                 minSize={0}
                 maxSize={50}
                 collapsible={true}
-                onCollapse={handlePaneCollapse}
-                onExpand={handlePaneExpand}
+                onCollapse={handleSidebarPaneCollapse}
+                onExpand={handleSidebarPaneExpand}
                 bind:this={sidebarPane}>
             <JsTree></JsTree>
         </Resizable.Pane>
@@ -137,20 +137,21 @@
         <!-- svelte-ignore non_reactive_update -->
         <Resizable.Handle hidden={!isVisibleSidebarPane} withHandle="true" bind:ref={refSidebarHandle}/>
 
-        <!--        Code Pane-->
+        <!--        Data Code Pane Group-->
         <Resizable.Pane>
             <div class="flex h-full min-h-full flex-col pr-1">
                 <Resizable.PaneGroup
                         direction="vertical"
                         class="min-h-[200px] gap-1 rounded-lg"
                 >
+                    <!--                    Data Pane-->
                     <Resizable.Pane
                             defaultSize={1}
                             hidden={!isVisibleDataPane}
                             collapsible={true}
-                            onCollapse={handleCodePaneCollapse}
-                            onExpand={handleCodePaneExpand}
-                            bind:this={codePane}
+                            onCollapse={handleDataPaneCollapse}
+                            onExpand={handleDataPaneExpand}
+                            bind:this={dataPane}
                     >
                         <div class="flex h-full flex-col rounded-lg bg-primary/20">
                             <div class="flex flex-row items-center gap-2 px-2 py-1">
@@ -162,8 +163,8 @@
                             <MonacoEditor bind:sourceCode={jsonSourceCode} language="json"></MonacoEditor>
                         </div>
                     </Resizable.Pane>
-                    <Resizable.Handle hidden={!isVisibleDataPane} withHandle="true" bind:ref={refCodeHandle}/>
-                    <!--        Results Pane-->
+                    <Resizable.Handle hidden={!isVisibleDataPane} withHandle="true" bind:ref={refDataPaneHandle}/>
+                    <!--        Ejs Code Pane-->
                     <Resizable.Pane
                             hidden={!isVisibleCodePane}
                             defaultSize={2}
@@ -182,11 +183,8 @@
             </div>
         </Resizable.Pane>
         <Resizable.Handle withHandle/>
-        <Resizable.Pane
-                defaultSize={50}
-                hidden={!isVisibleResultPane}
-                class="rounded-lg bg-secondary/10"
-        >
+        <!--        Result Pane-->
+        <Resizable.Pane defaultSize={35} hidden={!isVisibleResultPane} class="rounded-lg bg-secondary/10">
             <div class="flex flex-col gap-1">
                 <div class="flex flex-row-reverse gap-2 p-1">
                     <button
@@ -216,4 +214,3 @@
         </Resizable.Pane>
     </Resizable.PaneGroup>
 </div>
-<div class="icon-folder-check"></div>
