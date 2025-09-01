@@ -1,14 +1,41 @@
 <script lang="ts">
-	//import favicon from '$lib/assets/favicon.svg';
-    import "../app.css"; /* Adjust path if your CSS file is elsewhere */
-    import AppLayout from "$lib/components/app-layout.svelte";
+  import { remult, Remult } from "remult";
+  import { createSubscriber } from "svelte/reactivity";
 
-    let { children } = $props();
+
+  let { children, data } = $props();
+
+  // To be done once in the application.
+  function initRemultSvelteReactivity() {
+    // Auth reactivity (remult.user, remult.authenticated(), ...)
+    {
+      let update = () => {};
+      let s = createSubscriber((u) => {
+        update = u;
+      });
+      remult.subscribeAuth({
+        reportObserved: () => s(),
+        reportChanged: () => update(),
+      });
+    }
+
+    // Entities reactivity
+    {
+      Remult.entityRefInit = (x) => {
+        let update = () => {};
+        let s = createSubscriber((u) => {
+          update = u;
+        });
+        x.subscribe({
+          reportObserved: () => s(),
+          reportChanged: () => update(),
+        });
+      };
+    }
+  }
+  initRemultSvelteReactivity();
+
+  remult.user = data.user;
 </script>
-<!--<svelte:head>-->
-<!--    Head-->
-<!--</svelte:head>-->
-<AppLayout />
 
 {@render children?.()}
-

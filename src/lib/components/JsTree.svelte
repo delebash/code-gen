@@ -4,12 +4,18 @@
     import jQuery from 'jquery'
 
     let treeElement; // This will be a reference to our DOM element
-    const data = [
-        {"id": "ajson1", "parent": "#", "text": "Simple root node" },
-        {"id": "ajson2", "parent": "#", "text": "Root node 2"},
-        {"id": "ajson3", "parent": "ajson2", "text": "Child 1","type": "ejs-file"},
-        {"id": "ajson4", "parent": "ajson2", "text": "Child 2", "type": "json-file"},
-    ];
+    // const data = [
+    //     {"id": "ajson1", "parent": "#", "text": "Simple root node" },
+    //     {"id": "ajson2", "parent": "#", "text": "Root node 2"},
+    //     {"id": "ajson3", "parent": "ajson2", "text": "Child 1","type": "ejs-file"},
+    //     {"id": "ajson4", "parent": "ajson2", "text": "Child 2", "type": "json-file"},
+    // ];
+    let data = []
+
+
+
+
+
     // let data2=[
     //     'Simple root node',
     //     {

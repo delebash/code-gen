@@ -102,7 +102,7 @@
 </script>
 <div class="editor-top">
     <Button variant="outline" onclick={() => ( isVisibleSidebarPane = !isVisibleSidebarPane)}>
-        {isVisibleSidebarPane ? "Hide" : "Show"} Side Bar
+        {isVisibleSidebarPane ? "Hide" : "Show"} Explorer
     </Button>
     <Button variant="outline" onclick={() => (isVisibleDataPane = !isVisibleDataPane)}>
         {isVisibleDataPane ? "Hide" : "Show"} Data Pane
