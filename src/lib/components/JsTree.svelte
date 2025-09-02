@@ -10,7 +10,7 @@
     //     {"id": "ajson3", "parent": "ajson2", "text": "Child 1","type": "ejs-file"},
     //     {"id": "ajson4", "parent": "ajson2", "text": "Child 2", "type": "json-file"},
     // ];
-    let data = []
+    let data = [   {"id": "ajson1", "parent": "#", "text": "Simple root node","connectionString":"test"}]
 
 
 
@@ -156,7 +156,7 @@
             })
             .on('changed.jstree', function (e, data) {
                 if(data && data.selected && data.selected.length) {
-                    console.log('changed', data.node.id);
+                    console.log('changed', data.node.original);
                     // jQuery.get('?operation=get_content&id=' + data.selected.join(':'), function (d) {
                     //     if(d && typeof d.type !== 'undefined') {
                     //         jQuery('#data .content').hide();
