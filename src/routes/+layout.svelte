@@ -1,41 +1,45 @@
 <script lang="ts">
-  import { remult, Remult } from "remult";
-  import { createSubscriber } from "svelte/reactivity";
+    import "../app.css";
+    import {remult, Remult} from "remult";
+    import {createSubscriber} from "svelte/reactivity";
 
 
-  let { children, data } = $props();
+    let {children, data} = $props();
 
-  // To be done once in the application.
-  function initRemultSvelteReactivity() {
-    // Auth reactivity (remult.user, remult.authenticated(), ...)
-    {
-      let update = () => {};
-      let s = createSubscriber((u) => {
-        update = u;
-      });
-      remult.subscribeAuth({
-        reportObserved: () => s(),
-        reportChanged: () => update(),
-      });
+    // To be done once in the application.
+    function initRemultSvelteReactivity() {
+        // Auth reactivity (remult.user, remult.authenticated(), ...)
+        {
+            let update = () => {
+            };
+            let s = createSubscriber((u) => {
+                update = u;
+            });
+            remult.subscribeAuth({
+                reportObserved: () => s(),
+                reportChanged: () => update(),
+            });
+        }
+
+        // Entities reactivity
+        {
+            Remult.entityRefInit = (x) => {
+                let update = () => {
+                };
+                let s = createSubscriber((u) => {
+                    update = u;
+                });
+                x.subscribe({
+                    reportObserved: () => s(),
+                    reportChanged: () => update(),
+                });
+            };
+        }
     }
 
-    // Entities reactivity
-    {
-      Remult.entityRefInit = (x) => {
-        let update = () => {};
-        let s = createSubscriber((u) => {
-          update = u;
-        });
-        x.subscribe({
-          reportObserved: () => s(),
-          reportChanged: () => update(),
-        });
-      };
-    }
-  }
-  initRemultSvelteReactivity();
+    initRemultSvelteReactivity();
 
-  remult.user = data.user;
+    remult.user = data.user;
 </script>
 
 {@render children?.()}

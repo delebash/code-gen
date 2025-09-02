@@ -1,9 +1,6 @@
 <script lang="ts">
-  // import Tile from "../demo/Tile.svelte";
-  // import Todo from "../demo/todo/Todo.svelte";
   import AppLayout from "$lib/components/app-layout.svelte";
-  // import "../styles.css";
-  import "../app.css";
+
 </script>
 <!--<div class="tiles">-->
 <!--  <Tile-->
@@ -41,4 +38,4 @@
 <!--    <br>-->
 <!--</div>-->
 
-<!--<AppLayout />-->
+<AppLayout />

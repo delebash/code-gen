@@ -1,4 +1,4 @@
-@import "shadcn.css";
+@import "./shadcn.css";
 
 .fa-file-code{
     color: #2f86cc;
@@ -8,4 +8,12 @@ color: #fdd871;
 }
 .fa-file-lines{
 color: #5a932a;
+}
+.container {
+    width: 100%;
+    height: 100vh;
+}
+.editor-top {
+    display: flex;
+    justify-content: space-between;
 }
