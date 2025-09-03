@@ -1,6 +1,6 @@
 import {Entity, Fields} from "remult";
 
-@Entity<DatabaseConnectionTree>("tasks", {
+@Entity<DatabaseConnectionTree>("database_connections", {
     allowApiCrud: true,
 })
 export class DatabaseConnectionTree {
@@ -14,10 +14,10 @@ export class DatabaseConnectionTree {
     text = ""
 
     @Fields.string()
-    database_connection = ""
-
-    @Fields.string()
     type = ""
+
+    @Fields.json()
+    data = {}
 
     @Fields.createdAt()
     createdAt?: Date;

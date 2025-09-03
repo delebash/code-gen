@@ -3,30 +3,37 @@
     import 'jstree/dist/themes/default/style.min.css';
     import jQuery from 'jquery'
     import DialogDbConnection from "$lib/components/DialogDbConnection.svelte";
+    import {EntityError, repo} from "remult";
+    import {DatabaseConnectionTree} from "../../shared/Entities/DatabaseConnectionTree.js"
+    import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js"
+    import {buttonVariants} from "$lib/components/ui/button/index.js";
 
+    let isAlertDialogOpen = $state(false);
     let dialogDbConnection, treeElement
+    let databaseConnections = $state([])
+    let errorMsg = $state("");
 
-    // const data = [
-    //     {"id": "ajson1", "parent": "#", "text": "Simple root node" },
-    //     {"id": "ajson2", "parent": "#", "text": "Root node 2"},
-    //     {"id": "ajson3", "parent": "ajson2", "text": "Child 1","type": "database-connection"},
-    //     {"id": "ajson4", "parent": "ajson2", "text": "Child 2", "type": "database-connection"},
-    // ];
-    let data = [
-        {"id": "1", "parent": "#", "text": "Database Connections"},
-        {"id": "2", "parent": "1", "text": "testconn", "database_connection": "testy", "type": "database_connection"},
-    ]
+    async function addDatabaseConnection(data) {
+        errorMsg = "";
+        try {
+            const newDatabaseConnection = await repo(DatabaseConnectionTree).insert(data);
+            databaseConnections.unshift(newDatabaseConnection);
+            databaseConnections = [...databaseConnections, newDatabaseConnection];
+            data = {};
+            return newDatabaseConnection;
+        } catch (error) {
+            errorMsg = error instanceof EntityError ? error.message : "Unknown error";
+        }
+    }
 
-    // let data2=[
-    //     'Simple root node',
-    //     {
-    //         'id' : 'node_2',
-    //         'text' : 'Root node with options',
-    //         'state' : { 'opened' : true, 'selected' : true },
-    //         'children' : [ { 'text' : 'Child 1' }, 'Child 2']
-    //     }
-    // ]
     onMount(async () => {
+        //Initial data
+        const seedData = {"id": "1", "parent": "#", "text": "Database Connections", "data": {}}
+        if ((await repo(DatabaseConnectionTree).count()) === 0) {
+            await repo(DatabaseConnectionTree).insert(seedData)
+        }
+        databaseConnections = await repo(DatabaseConnectionTree).find()
+
         const jstree = await import('jstree');
 
         jQuery(treeElement).jstree({
@@ -34,7 +41,7 @@
                 "animation": 0,
                 "check_callback": true,
                 "themes": {"stripes": true},
-                'data': data
+                'data': databaseConnections
             },
             'types': {
                 'default': {'icon': 'fa-solid fa-folder'},
@@ -74,14 +81,13 @@
                                 try {
                                     // Open the dialog and await the result
                                     const formData = await dialogDbConnection.openDialog();
-                                    console.log(formData)
                                     if (formData) {
                                         let inst = jQuery.jstree.reference(data.reference),
                                             obj = inst.get_node(data.reference);
                                         inst.create_node(obj, {
                                             type: "database_connection",
                                             text: formData.name,
-                                            database_connection: formData.database_connection
+                                            data: {database_connection: formData.database_connection}
                                         }, "last", function (new_node) {
                                             setTimeout(function () {
                                                 inst.edit(new_node);
@@ -101,56 +107,62 @@
                 }
             },
         })
-            .on('delete_node.jstree', function (e, data) {
-                // jQuery.get('?operation=delete_node', { 'id' : data.node.id })
-                //     .fail(function () {
-                //         data.instance.refresh();
-                //     });
-                console.log('delete', data.node.id);
-            })
-            .on('create_node.jstree', function (e, data) {
-                let objData
+            .on('delete_node.jstree', async function (e, data) {
                 try {
-                    if (data.node.type === 'database_connection') {
-                        objData = {
-                            'parent': data.node.parent,
-                            'text': data.node.text,
-                            'type': data.node.type,
-                            'database_connection': data.node.original.database_connection
+                    let idsToDelete = []
+                    let immediateChildrenIds = data.node.children_d;
+
+                    idsToDelete.push(data.node.id)
+                    idsToDelete.push(...immediateChildrenIds)
+                    if (idsToDelete.length > 1) {
+                        for (let id of idsToDelete) {
+                            await repo(DatabaseConnectionTree).delete(id)
                         }
-                        data.instance.set_id(data.node, d.id);
-                    } else if (data.node.type === 'default') {
-                        objData = {
-                            'parent': data.node.parent,
-                            'text': data.node.text,
-                            'type': data.node.type
-                        }
-                    }else {
-                        throw new Error('Unknown node type: ' + data.node.type);
+                    } else {
+                        isAlertDialogOpen=true
+                        // throw new Error('Cannot delete root node')
+
                     }
+
                 } catch (e) {
                     console.log(e)
                     data.instance.refresh();
                 }
-
-
-                // jQuery.get('?operation=create_node', { 'parent' : data.node.parent, 'text' : data.node.text, 'type' : data.node.type })
-                //     .done(function (d) {
-                //         data.instance.set_id(data.node, d.id);
-                //     })
-                //     .fail(function () {
-                //         data.instance.refresh();
-                //     });
             })
-            .on('rename_node.jstree', function (e, data) {
-                console.log('rename', data.node.id);
-                // jQuery.get('?operation=rename_node', { 'id' : data.node.id, 'text' : data.text })
-                //     .done(function (d) {
-                //         data.instance.set_id(data.node, d.id);
-                //     })
-                //     .fail(function () {
-                //         data.instance.refresh();
-                //     });
+            .on('create_node.jstree', async function (e, data) {
+                let objData
+                try {
+                    if (data.node.type === 'database_connection') {
+                        objData = {
+                            parent: data.node.parent,
+                            text: data.node.text,
+                            type: data.node.type,
+                            data: {database_connection: data.node.data.database_connection}
+                        }
+                    } else if (data.node.type === 'default') {
+                        objData = {
+                            parent: data.node.parent,
+                            text: data.node.text,
+                            type: data.node.type
+                        }
+                    } else {
+                        throw new Error('Unknown node type: ' + data.node.type);
+                    }
+
+                    let newDatabaseConnection = await addDatabaseConnection(objData)
+                    data.instance.set_id(data.node, newDatabaseConnection.id);
+                } catch (e) {
+                    console.log(e)
+                    data.instance.refresh();
+                }
+            })
+            .on('rename_node.jstree', async function (e, data) {
+                try {
+                    await repo(DatabaseConnectionTree).update(data.node.id, {'text': data.text})
+                } catch (e) {
+                    console.log(e)
+                    data.instance.refresh();
+                }
             })
             .on('move_node.jstree', function (e, data) {
                 console.log('move', data.node.id);
@@ -174,8 +186,36 @@
                 //         data.instance.refresh();
                 //     });
             })
-            .on('dblclick', '.jstree-anchor', function (e, data) {
-                console.log('dbleclick');
+            .on('dblclick', '.jstree-anchor', async function (e) {
+                // let node = jQuery(e.target).closest("li");
+                // let id = node[0].id;
+                // let data = jQuery(treeElement).jstree().get_node(id)
+                // let instance = jQuery(treeElement).jstree()
+                // $('#tree').jstree(true).get_node("some_node_id").data.obj.asdf;
+                // jQuery(treeElement).jstree(true).get_node(li[0].id).data.asdf = "some other value";
+
+                let li = jQuery(e.target).closest("li"); // Get the closest list item (node element)
+                let instance = jQuery.jstree.reference(treeElement);
+                let nodeId = li[0].id
+                let node = instance.get_node(nodeId); // Get the node
+
+                let formData = {
+                    name: node.text,
+                    database_connection: node.data.database_connection
+                }
+
+                try {
+                    let updatedData = await dialogDbConnection.openDialog(formData);
+                    node.data.database_connection = updatedData.database_connection
+                    instance.rename_node(node, updatedData.name);
+                    await repo(DatabaseConnectionTree).update(nodeId, {
+                        text: updatedData.name,
+                        data: {database_connection: updatedData.database_connection}
+                    })
+                } catch (e) {
+                    console.log(e)
+                    instance.refresh();
+                }
                 // jQuery.get('?operation=copy_node', { 'id' : data.original.id, 'parent' : data.parent })
                 //     .done(function (d) {
                 //         //data.instance.load_node(data.parent);
@@ -226,5 +266,19 @@
             });
     });
 </script>
+<!--<Button on:click={}>Add Database Connection</Button>-->
 <div bind:this={treeElement}></div>
 <DialogDbConnection bind:this={dialogDbConnection}></DialogDbConnection>
+<AlertDialog.Root bind:open={isAlertDialogOpen}>
+    <AlertDialog.Content>
+        <AlertDialog.Header>
+            <AlertDialog.Title>Error</AlertDialog.Title>
+            <AlertDialog.Description>
+                You cannot delete the root node.
+            </AlertDialog.Description>
+        </AlertDialog.Header>
+        <AlertDialog.Footer>
+            <AlertDialog.Cancel>Close</AlertDialog.Cancel>
+        </AlertDialog.Footer>
+    </AlertDialog.Content>
+</AlertDialog.Root>

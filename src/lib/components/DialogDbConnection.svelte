@@ -27,8 +27,11 @@
     let open = false;
 
     // Expose a function to open the dialog and get a Promise
-    export function openDialog() {
+    export function openDialog(data) {
         open = true;
+        if (data) {
+           formData = data;
+        }
         return new Promise((res, rej) => {
             promise = {resolve: res, reject: rej};
         });
