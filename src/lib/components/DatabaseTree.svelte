@@ -6,7 +6,6 @@
     import {EntityError, repo} from "remult";
     import {DatabaseConnectionTree} from "../../shared/Entities/DatabaseConnectionTree.js"
     import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js"
-    import {buttonVariants} from "$lib/components/ui/button/index.js";
 
     let isAlertDialogOpen = $state(false);
     let dialogDbConnection, treeElement
@@ -111,19 +110,17 @@
                 try {
                     let idsToDelete = []
                     let immediateChildrenIds = data.node.children_d;
-
                     idsToDelete.push(data.node.id)
                     idsToDelete.push(...immediateChildrenIds)
-                    if (idsToDelete.length > 1) {
+                    if (data.node.id === "1") {
+                        console.log('root node')
+                        //You can't delete root node with id="1"
+                        isAlertDialogOpen = true
+                    } else {
                         for (let id of idsToDelete) {
                             await repo(DatabaseConnectionTree).delete(id)
                         }
-                    } else {
-                        isAlertDialogOpen=true
-                        // throw new Error('Cannot delete root node')
-
                     }
-
                 } catch (e) {
                     console.log(e)
                     data.instance.refresh();
@@ -158,33 +155,38 @@
             })
             .on('rename_node.jstree', async function (e, data) {
                 try {
-                    await repo(DatabaseConnectionTree).update(data.node.id, {'text': data.text})
+                    await repo(DatabaseConnectionTree).update(data.node.id, {text: data.text})
                 } catch (e) {
                     console.log(e)
                     data.instance.refresh();
                 }
             })
-            .on('move_node.jstree', function (e, data) {
+            .on('move_node.jstree', async function (e, data) {
                 console.log('move', data.node.id);
-                // jQuery.get('?operation=move_node', { 'id' : data.node.id, 'parent' : data.parent })
-                //     .done(function (d) {
-                //         //data.instance.load_node(data.parent);
-                //         data.instance.refresh();
-                //     })
-                //     .fail(function () {
-                //         data.instance.refresh();
-                //     });
+                try {
+                    await repo(DatabaseConnectionTree).update(data.node.id, {parent: data.parent})
+                    data.instance.refresh();
+                } catch (e) {
+                    console.log(e)
+                    data.instance.refresh();
+                }
             })
-            .on('copy_node.jstree', function (e, data) {
+            .on('copy_node.jstree',async function (e, data) {
                 console.log('copy', data.node.id);
-                // jQuery.get('?operation=copy_node', { 'id' : data.original.id, 'parent' : data.parent })
-                //     .done(function (d) {
-                //         //data.instance.load_node(data.parent);
-                //         data.instance.refresh();
-                //     })
-                //     .fail(function () {
-                //         data.instance.refresh();
-                //     });
+                let objData={
+                    parent: data.node.parent,
+                    text: data.node.text,
+                    type: data.node.type,
+                    data: {database_connection: data.node.data.database_connection}
+                }
+                try{
+                    let newDatabaseConnection = await addDatabaseConnection(objData)
+                    data.instance.set_id(data.node, newDatabaseConnection.id);
+                    data.instance.refresh();
+                }catch(e){
+                    console.log(e)
+                    data.instance.refresh();
+                }
             })
             .on('dblclick', '.jstree-anchor', async function (e) {
                 // let node = jQuery(e.target).closest("li");
@@ -216,17 +218,9 @@
                     console.log(e)
                     instance.refresh();
                 }
-                // jQuery.get('?operation=copy_node', { 'id' : data.original.id, 'parent' : data.parent })
-                //     .done(function (d) {
-                //         //data.instance.load_node(data.parent);
-                //         data.instance.refresh();
-                //     })
-                //     .fail(function () {
-                //         data.instance.refresh();
-                //     });
             })
             .on('changed.jstree', function (e, data) {
-                if (data && data.selected && data.selected.length) {
+                // if (data && data.selected && data.selected.length) {
                     // console.log('changed', data.node.original);
                     // jQuery.get('?operation=get_content&id=' + data.selected.join(':'), function (d) {
                     //     if(d && typeof d.type !== 'undefined') {
@@ -260,13 +254,13 @@
                     //         }
                     //     }
                     // });
-                } else {
-                    // console.log('else', data);
-                }
+                // } else {
+                //     // console.log('else', data);
+                // }
             });
     });
 </script>
-<!--<Button on:click={}>Add Database Connection</Button>-->
+
 <div bind:this={treeElement}></div>
 <DialogDbConnection bind:this={dialogDbConnection}></DialogDbConnection>
 <AlertDialog.Root bind:open={isAlertDialogOpen}>
