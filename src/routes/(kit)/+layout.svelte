@@ -1,5 +1,5 @@
 <script lang="ts">
-    import "../app.css";
+    import "../../app.css";
     import {remult, Remult} from "remult";
     import {createSubscriber} from "svelte/reactivity";
 

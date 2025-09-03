@@ -51,7 +51,7 @@
             ],
             "contextmenu" : {
                 "items" : function(node) {
-                    var tmp = jQuery.jstree.defaults.contextmenu.items();
+                    let tmp = jQuery.jstree.defaults.contextmenu.items();
                     delete tmp.create.action;
                     tmp.create.label = "New";
                     tmp.create.submenu = {
@@ -59,7 +59,7 @@
                             "separator_after"	: true,
                             "label"				: "Folder",
                             "action"			: function (data) {
-                                var inst = jQuery.jstree.reference(data.reference),
+                                let inst = jQuery.jstree.reference(data.reference),
                                     obj = inst.get_node(data.reference);
                                 inst.create_node(obj, { type : "default" }, "last", function (new_node) {
                                     setTimeout(function () { inst.edit(new_node); },0);
@@ -69,7 +69,7 @@
                         "create_ejs_file" : {
                             "label"				: "Ejs File",
                             "action"			: function (data) {
-                                var inst = jQuery.jstree.reference(data.reference),
+                                let inst = jQuery.jstree.reference(data.reference),
                                     obj = inst.get_node(data.reference);
                                 inst.create_node(obj, { type : "ejs-file" }, "last", function (new_node) {
                                     setTimeout(function () { inst.edit(new_node); },0);
@@ -79,7 +79,7 @@
                         "create_json_file" : {
                             "label"				: "Json Data File",
                             "action"			: function (data) {
-                                var inst = jQuery.jstree.reference(data.reference),
+                                let inst = jQuery.jstree.reference(data.reference),
                                     obj = inst.get_node(data.reference);
                                 inst.create_node(obj, { type : "json-file" }, "last", function (new_node) {
                                     setTimeout(function () { inst.edit(new_node); },0);

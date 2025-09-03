@@ -4,8 +4,11 @@
     import EditorResult from "$lib/components/editor-result.svelte"
     import {Button} from "$lib/components/ui/button";
     import {onMount} from "svelte";
-    import JsTree from "$lib/components/JsTree.svelte";
+    import FileTree from "$lib/components/FileTree.svelte";
+    import DatabaseTree from "$lib/components/DatabaseTree.svelte";
     import {tryParseJson, tryRender} from "../utils/utils";
+
+
 
 
     let sideOpen = true; // initial state
@@ -57,7 +60,6 @@
     }
 
     function addListnerSidebar() {
-        console.log("add sidebar listner function called")
         refSidebarHandle.addEventListener('dblclick', () => {
 
             if (!isSidebarPaneCollapsed) {
@@ -131,8 +133,17 @@
                 onCollapse={handleSidebarPaneCollapse}
                 onExpand={handleSidebarPaneExpand}
                 bind:this={sidebarPane}>
-            <JsTree></JsTree>
+            <Resizable.PaneGroup direction="vertical" class="min-h-[200px] gap-1 rounded-lg">
+                <Resizable.Pane defaultSize={15}>
+                    <DatabaseTree></DatabaseTree>
+                </Resizable.Pane>
+                <Resizable.Handle withHandle="true"></Resizable.Handle>
+                <Resizable.Pane defaultSize={85}>
+                    <FileTree></FileTree>
+                </Resizable.Pane>
+            </Resizable.PaneGroup>
         </Resizable.Pane>
+
         <!-- Bind the handle to the ref to get html handle element -->
         <!-- svelte-ignore non_reactive_update -->
         <Resizable.Handle hidden={!isVisibleSidebarPane} withHandle="true" bind:ref={refSidebarHandle}/>
@@ -214,3 +225,5 @@
         </Resizable.Pane>
     </Resizable.PaneGroup>
 </div>
+
+
