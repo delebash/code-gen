@@ -9,12 +9,20 @@ export default defineConfig({
         Icons({
             compiler: 'svelte',
         }),
-        // {
-        //     name: "config",
-        //     enforce: "post",
-        //     config(config) {
-        //         config.server.fs.allow = [process.cwd()];
-        //     }
-        // }
-    ]
+    ],
+    // {
+    //     name: "config",
+    //     enforce: "post",
+    //     config(config) {
+    //         config.server.fs.allow = [process.cwd()];
+    //     }
+    // }
+    // build: {
+    //     rollupOptions: {
+    //         external: ['fs', 'nodemailer', 'node-fetch'],
+    //     },
+    // },
+    // optimizeDeps: {
+    //     exclude: ['fs', 'nodemailer', 'node-fetch'],
+    // },
 });

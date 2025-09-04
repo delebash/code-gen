@@ -2,6 +2,10 @@
     import {onMount} from 'svelte';
     import 'jstree/dist/themes/default/style.min.css';
     import jQuery from 'jquery'
+    import icon_json from '$lib/assets/icons8-curly-brackets-24.png';
+    import icon_folder from '$lib/assets/icons8-folder-24.png';
+    import icon_ejs from '$lib/assets/icons8-ejs-24.png';
+
 
     let treeElement; // This will be a reference to our DOM element
     // const data = [
@@ -36,9 +40,11 @@
                 'data' : data
             },
             'types' : {
-                'default' : { 'icon' : 'fa-solid fa-folder' },
-                'ejs-file' : { 'valid_children' : [], 'icon' : 'fa-regular fa-file-code' },
-                'json-file' : { 'valid_children' : [], 'icon' : 'fa-regular fa-file-lines' }
+                'default' : { 'icon' : icon_folder },
+                'ejs-file' : { 'valid_children' : [], 'icon' : icon_ejs},
+                // 'ejs-file' : { 'valid_children' : [], 'icon' : 'fa-regular fa-file-code' },
+                // 'json-file' : { 'valid_children' : [], 'icon' : 'fa-regular fa-file-lines' }
+                'json-file' : { 'valid_children' : [], 'icon' : icon_json }
             },
             'unique' : {
                 'duplicate' : function (name, counter) {
@@ -198,3 +204,4 @@
     });
 </script>
 <div bind:this={treeElement}></div>
+<div id="data" class="my-icon"></div>

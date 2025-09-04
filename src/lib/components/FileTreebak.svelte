@@ -2,25 +2,24 @@
     import {onMount} from 'svelte';
     import 'jstree/dist/themes/default/style.min.css';
     import jQuery from 'jquery'
-    import DialogDbConnection from "$lib/components/DialogDbConnection.svelte";
+    import DialogFile from "$lib/components/DialogFile.svelte";
     import {EntityError, repo} from "remult";
-    import {DatabaseConnectionTree} from "../../shared/Entities/DatabaseConnectionTree.js"
+    // import {DatabaseConnectionTree} from "../../shared/Entities/DatabaseConnectionTree.js"
     import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js"
-    import icon_database from '$lib/assets/icons8-database-24.png';
-    import icon_folder from '$lib/assets/icons8-folder-24.png';
 
     let isAlertDialogOpen = $state(false);
     let dialogDbConnection, treeElement
     let databaseConnections = $state([])
     let errorMsg = $state("");
+    let fileFolders = $state([])
 
     async function addDatabaseConnection(data) {
         errorMsg = "";
         try {
-            const newDatabaseConnection = await repo(DatabaseConnectionTree).insert(data);
-            databaseConnections.unshift(newDatabaseConnection);
-            databaseConnections = [...databaseConnections, newDatabaseConnection];
-            data = {};
+            // const newDatabaseConnection = await repo(DatabaseConnectionTree).insert(data);
+            // databaseConnections.unshift(newDatabaseConnection);
+            // databaseConnections = [...databaseConnections, newDatabaseConnection];
+            // data = {};
             return newDatabaseConnection;
         } catch (error) {
             errorMsg = error instanceof EntityError ? error.message : "Unknown error";
@@ -29,11 +28,11 @@
 
     onMount(async () => {
         //Initial data
-        const seedData = {"id": "1", "parent": "#", "text": "Database Connections", "data": {}}
-        if ((await repo(DatabaseConnectionTree).count()) === 0) {
-            await repo(DatabaseConnectionTree).insert(seedData)
-        }
-        databaseConnections = await repo(DatabaseConnectionTree).find()
+        // const seedData = {"id": "1", "parent": "#", "text": "Database Connections", "data": {}}
+        // if ((await repo(DatabaseConnectionTree).count()) === 0) {
+        //     await repo(DatabaseConnectionTree).insert(seedData)
+        // }
+        // databaseConnections = await repo(DatabaseConnectionTree).find()
 
         const jstree = await import('jstree');
 
@@ -42,11 +41,11 @@
                 "animation": 0,
                 "check_callback": true,
                 "themes": {"stripes": true},
-                'data': databaseConnections
+                'data': fileFolders
             },
             'types': {
-                'default': {'icon': icon_folder},
-                'database_connection': {'icon': icon_database},
+                'default': {'icon': 'fa-solid fa-folder'},
+                'database_connection': {'icon': 'fa-solid fa-database'},
             },
             'unique': {
                 'duplicate': function (name, counter) {
@@ -156,8 +155,9 @@
                 }
             })
             .on('rename_node.jstree', async function (e, data) {
-                console.log('rename', data.node.id);
                 try {
+                    // let paths = data.instance.get_path(data.node,"/");
+                    // console.log(paths)
                     await repo(DatabaseConnectionTree).update(data.node.id, {text: data.text})
                 } catch (e) {
                     console.log(e)
@@ -224,39 +224,39 @@
             })
             .on('changed.jstree', function (e, data) {
                 // if (data && data.selected && data.selected.length) {
-                    // console.log('changed', data.node.original);
-                    // jQuery.get('?operation=get_content&id=' + data.selected.join(':'), function (d) {
-                    //     if(d && typeof d.type !== 'undefined') {
-                    //         jQuery('#data .content').hide();
-                    //         switch(d.type) {
-                    //             case 'text':
-                    //             case 'txt':
-                    //             case 'md':
-                    //             case 'htaccess':
-                    //             case 'log':
-                    //             case 'sql':
-                    //             case 'php':
-                    //             case 'js':
-                    //             case 'json':
-                    //             case 'css':
-                    //             case 'html':
-                    //                 jQuery('#data .code').show();
-                    //                 jQuery('#code').val(d.content);
-                    //                 break;
-                    //             case 'png':
-                    //             case 'jpg':
-                    //             case 'jpeg':
-                    //             case 'bmp':
-                    //             case 'gif':
-                    //                 jQuery('#data .image img').one('load', function () { jQuery(this).css({'marginTop':'-' + jQuery(this).height()/2 + 'px','marginLeft':'-' + jQuery(this).width()/2 + 'px'}); }).attr('src',d.content);
-                    //                 jQuery('#data .image').show();
-                    //                 break;
-                    //             default:
-                    //                 jQuery('#data .default').html(d.content).show();
-                    //                 break;
-                    //         }
-                    //     }
-                    // });
+                // console.log('changed', data.node.original);
+                // jQuery.get('?operation=get_content&id=' + data.selected.join(':'), function (d) {
+                //     if(d && typeof d.type !== 'undefined') {
+                //         jQuery('#data .content').hide();
+                //         switch(d.type) {
+                //             case 'text':
+                //             case 'txt':
+                //             case 'md':
+                //             case 'htaccess':
+                //             case 'log':
+                //             case 'sql':
+                //             case 'php':
+                //             case 'js':
+                //             case 'json':
+                //             case 'css':
+                //             case 'html':
+                //                 jQuery('#data .code').show();
+                //                 jQuery('#code').val(d.content);
+                //                 break;
+                //             case 'png':
+                //             case 'jpg':
+                //             case 'jpeg':
+                //             case 'bmp':
+                //             case 'gif':
+                //                 jQuery('#data .image img').one('load', function () { jQuery(this).css({'marginTop':'-' + jQuery(this).height()/2 + 'px','marginLeft':'-' + jQuery(this).width()/2 + 'px'}); }).attr('src',d.content);
+                //                 jQuery('#data .image').show();
+                //                 break;
+                //             default:
+                //                 jQuery('#data .default').html(d.content).show();
+                //                 break;
+                //         }
+                //     }
+                // });
                 // } else {
                 //     // console.log('else', data);
                 // }
@@ -265,7 +265,7 @@
 </script>
 
 <div bind:this={treeElement}></div>
-<DialogDbConnection bind:this={dialogDbConnection}></DialogDbConnection>
+<DialogFile bind:this={dialogDbConnection}></DialogFile>
 <AlertDialog.Root bind:open={isAlertDialogOpen}>
     <AlertDialog.Content>
         <AlertDialog.Header>
