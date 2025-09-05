@@ -16,7 +16,7 @@
 
 
     onMount(async () => {
-        FileController.buildFileTreeMethod('./data')
+        FileController.buildFileTreeMethod('./static')
         const jstree = await import('jstree');
 
         jQuery(treeElement).jstree({
