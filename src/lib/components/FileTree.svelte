@@ -16,8 +16,7 @@
 
 
     onMount(async () => {
-        FileController.buildFileTree('./data')
-        // let data =  await FileController.buildFileTree('./data')
+        FileController.buildFileTreeMethod('./data')
         const jstree = await import('jstree');
 
         jQuery(treeElement).jstree({
@@ -125,7 +124,7 @@
                             let node = data.instance.get_node(id)
                             let path = data.instance.get_path(node, "/");
                             let type = node.type
-                            FileController.deleteFileFolder(path, type)
+                            FileController.deleteFileFolderMethod(path, type)
                         }
                     }
                 } catch (e) {
@@ -137,14 +136,14 @@
                 console.log('create', data.node.text);
                 let newData = renameDuplicate(data)
                 let newPath = newData.instance.get_path(newData.node, "/");
-                FileController.createFileFolder(newPath, newData.node.type)
+                FileController.createFileFolderMethod(newPath, newData.node.type)
             })
             .on('rename_node.jstree', function (e, data) {
                 console.log('rename ', data.node.text);
                 let oldName = data.old
                 let newData = renameDuplicate(data)
                 let newPath = newData.instance.get_path(newData.node, "/");
-                FileController.renameFileFolder(oldName, newPath, newData.node.type)
+                FileController.renameFileFolderMethod(oldName, newPath, newData.node.type)
             })
             .on('move_node.jstree', function (e, data) {
                 console.log('move ', data.node.text);
