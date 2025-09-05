@@ -1,5 +1,21 @@
 import { BackendMethod, remult } from "remult";
-import { FileUtils } from "./fileUtils.js";
+
+/**
+ * Type defining the file operations that will be implemented on the server side
+ * This type matches the static methods of FileUtils class
+ */
+export type FileOperations = {
+  readFile(path: string): string | undefined;
+  writeFile(
+    pathFile: string,
+    data: string | Buffer | Uint8Array | DataView
+  ): void;
+  buildFileTree(folderPath: string): any[];
+  renameFileFolder(oldName: string, newPath: string): void;
+  createFileFolder(newPath: string, type: string): void;
+  deleteFileFolder(path: string, type: string): void;
+  makeDirectory(path: string): void;
+};
 
 /**
  * A controller class to manage file operations such as reading, writing,
@@ -8,6 +24,8 @@ import { FileUtils } from "./fileUtils.js";
  * execution in a backend environment.
  */
 export class FileController {
+  // Abstract FileUtils instance that will be implemented on the server side
+  static fu: FileOperations;
   /**
    * Reads the content of a file from the specified path.
    *
@@ -15,8 +33,8 @@ export class FileController {
    * @return {string} The content of the file as a string.
    */
   @BackendMethod({ allowed: true })
-  static readFile(path) {
-    let data = FileUtils.readFile(path);
+  static readFileMethod(path: string) {
+    let data = this.fu.readFile(path);
     return data;
   }
 
@@ -28,8 +46,11 @@ export class FileController {
    * @return {void} No return value. The operation writes data directly to the specified file.
    */
   @BackendMethod({ allowed: true })
-  static writeFile(pathFile, data) {
-    FileUtils.writeFile(pathFile, data);
+  static writeFileMethod(
+    pathFile: string,
+    data: string | Buffer | Uint8Array | DataView
+  ) {
+    this.fu.writeFile(pathFile, data);
   }
 
   /**
@@ -40,20 +61,20 @@ export class FileController {
    * @return {string} A JSON string representation of the file tree.
    */
   @BackendMethod({ allowed: true })
-  static buildFileTree(folderPath) {
-    let fileTree = JSON.stringify(FileUtils.buildFileTree(folderPath), null, 2);
-    FileUtils.writeFile("./static/fileTree.json", fileTree);
+  static buildFileTreeMethod(folderPath: string) {
+    let fileTree = JSON.stringify(this.fu.buildFileTree(folderPath), null, 2);
+    this.fu.writeFile("./static/fileTree.json", fileTree);
     return fileTree;
   }
 
   @BackendMethod({ allowed: true })
-  static renameFileFolder(oldName, newPath) {
-    FileUtils.renameFileFolder(oldName, newPath);
+  static renameFileFolderMethod(oldName: string, newPath: string) {
+    this.fu.renameFileFolder(oldName, newPath);
   }
 
   @BackendMethod({ allowed: true })
-  static createFileFolder(newPath, type) {
-    FileUtils.createFileFolder(newPath, type);
+  static createFileFolderMethod(newPath: string, type: string) {
+    this.fu.createFileFolder(newPath, type);
   }
 
   /**
@@ -64,7 +85,7 @@ export class FileController {
    * @return {void} This method does not return a value.
    */
   @BackendMethod({ allowed: true })
-  static deleteFileFolder(path, type) {
-    FileUtils.deleteFileFolder(path, type);
+  static deleteFileFolderMethod(path: string, type: string) {
+    this.fu.deleteFileFolder(path, type);
   }
 }
