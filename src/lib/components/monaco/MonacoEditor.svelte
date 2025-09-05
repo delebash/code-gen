@@ -48,7 +48,7 @@
 
         //Import workers
         monaco = (await import('./monaco')).default;
-        useMonacoEx(monaco)
+        // useMonacoEx(monaco)
         //
         // import("monaco-themes/themes/Blackboard.json").then((data) => {
         //     monaco.editor.defineTheme("Blackboard", data);

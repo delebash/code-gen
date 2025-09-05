@@ -214,7 +214,7 @@
                             <p class="text-sm">The preview will appear here</p>
                         </div>
                     {:else}
-                        <EditorResult input={4}></EditorResult>
+                        <EditorResult input={htmlString}></EditorResult>
                     {/if}
                 </div>
             </div>
