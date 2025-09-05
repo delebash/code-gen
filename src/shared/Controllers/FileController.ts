@@ -34,7 +34,7 @@ export class FileController {
    */
   @BackendMethod({ allowed: true })
   static readFileMethod(path: string) {
-    let data = this.fu.readFile(path);
+    let data = FileController.fu.readFile(path);
     return data;
   }
 
@@ -50,7 +50,7 @@ export class FileController {
     pathFile: string,
     data: string | Buffer | Uint8Array | DataView
   ) {
-    this.fu.writeFile(pathFile, data);
+    FileController.fu.writeFile(pathFile, data);
   }
 
   /**
@@ -62,19 +62,19 @@ export class FileController {
    */
   @BackendMethod({ allowed: true })
   static buildFileTreeMethod(folderPath: string) {
-    let fileTree = JSON.stringify(this.fu.buildFileTree(folderPath), null, 2);
-    this.fu.writeFile("./static/fileTree.json", fileTree);
+    let fileTree = JSON.stringify(FileController.fu.buildFileTree(folderPath), null, 2);
+    FileController.fu.writeFile("./static/fileTree.json", fileTree);
     return fileTree;
   }
 
   @BackendMethod({ allowed: true })
   static renameFileFolderMethod(oldName: string, newPath: string) {
-    this.fu.renameFileFolder(oldName, newPath);
+    FileController.fu.renameFileFolder(oldName, newPath);
   }
 
   @BackendMethod({ allowed: true })
   static createFileFolderMethod(newPath: string, type: string) {
-    this.fu.createFileFolder(newPath, type);
+    FileController.fu.createFileFolder(newPath, type);
   }
 
   /**
@@ -86,6 +86,6 @@ export class FileController {
    */
   @BackendMethod({ allowed: true })
   static deleteFileFolderMethod(path: string, type: string) {
-    this.fu.deleteFileFolder(path, type);
+    FileController.fu.deleteFileFolder(path, type);
   }
 }

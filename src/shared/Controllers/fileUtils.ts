@@ -1,5 +1,5 @@
 import path from "path";
-import fs from "fs";
+import fs from "fs-extra";
 
 /**
  * Utility class for handling file and directory-related operations.
