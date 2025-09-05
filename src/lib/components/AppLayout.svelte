@@ -6,10 +6,7 @@
     import {onMount} from "svelte";
     import FileTree from "$lib/components/FileTree.svelte";
     import DatabaseTree from "$lib/components/DatabaseTree.svelte";
-    import {tryParseJson, tryRender} from "../utils/utils";
-
-
-
+    import {Utils} from "../utils/utils";
 
     let sideOpen = true; // initial state
     let dataOpen = false; // initial state
@@ -71,7 +68,6 @@
         });
     }
 
-
     onMount(() => {
         addListnerSidebar()
         addListnerDataPane()
@@ -81,7 +77,7 @@
         const renderEjs = async () => {
             let data: unknown = null;
             if (jsonSourceCode) {
-                const jsonResult = tryParseJson(jsonSourceCode);
+                const jsonResult = Utils.tryParseJson(jsonSourceCode);
                 data = jsonResult.data;
                 jsonSourceCodeError = jsonResult.error;
                 if (jsonResult.error) {
@@ -90,7 +86,7 @@
             } else {
                 jsonSourceCodeError = "";
             }
-            const {html, error} = await tryRender(ejsSourceCode, data);
+            const {html, error} = await Utils.tryRender(ejsSourceCode, data);
 
             ejsSourceCodeError = error;
             htmlString = html ?? "";

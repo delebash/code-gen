@@ -6,14 +6,22 @@
     import {EntityError, repo} from "remult";
     import {DatabaseConnectionTree} from "../../shared/Entities/DatabaseConnectionTree.js"
     import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js"
-    import icon_database from '$lib/assets/icons8-database-24.png';
-    import icon_folder from '$lib/assets/icons8-folder-24.png';
+    import icon_database from '$lib/assets/icons/icons8-database-24.png';
+    import icon_folder from '$lib/assets/icons/icons8-folder-24.png';
 
     let isAlertDialogOpen = $state(false);
     let dialogDbConnection, treeElement
     let databaseConnections = $state([])
     let errorMsg = $state("");
 
+
+    /**
+     * Adds a new database connection to the repository and updates the internal database connections list.
+     *
+     * @param {Object} data - The data object containing properties required to create a new database connection.
+     * @return {Promise<Object>} The newly created database connection object.
+     * @throws {Error} If an error occurs during the process, an appropriate error message is logged.
+     */
     async function addDatabaseConnection(data) {
         errorMsg = "";
         try {
@@ -35,6 +43,17 @@
         }
         databaseConnections = await repo(DatabaseConnectionTree).find()
 
+        /**
+         * The `jstree` variable represents the imported `jsTree` library module, a popular jQuery plugin
+         * used to provide interactive tree-structured data visualization and manipulation in web applications.
+         *
+         * This library allows developers to create, configure, and manage dynamic trees, supporting
+         * drag-and-drop, keyboard navigation, lazy loading, customizable themes, and various plugins
+         * for extended functionality.
+         *
+         * The module must be imported asynchronously and is commonly used for implementing hierarchical
+         * data structures like file explorers, category lists, or organization charts.
+         */
         const jstree = await import('jstree');
 
         jQuery(treeElement).jstree({
@@ -54,7 +73,7 @@
                 }
             },
             "plugins": [
-                "contextmenu", "dnd", "search",
+                "contextmenu", "dnd", "search", "unique",
                 "state", "types", "wholerow"
             ],
             "contextmenu": {
@@ -156,9 +175,9 @@
                 }
             })
             .on('rename_node.jstree', async function (e, data) {
-                console.log('rename', data.node.id);
+                console.log('rename', data.node);
                 try {
-                    await repo(DatabaseConnectionTree).update(data.node.id, {text: data.text})
+                    await repo(DatabaseConnectionTree).update(data.node.id, {text: data.node.text})
                 } catch (e) {
                     console.log(e)
                     data.instance.refresh();
@@ -167,99 +186,63 @@
             .on('move_node.jstree', async function (e, data) {
                 console.log('move', data.node.id);
                 try {
-                    await repo(DatabaseConnectionTree).update(data.node.id, {parent: data.parent})
+                    await repo(DatabaseConnectionTree).update(data.node.id, {parent: data.node.parent})
                     data.instance.refresh();
                 } catch (e) {
                     console.log(e)
                     data.instance.refresh();
                 }
             })
-            .on('copy_node.jstree',async function (e, data) {
+            .on('copy_node.jstree', async function (e, data) {
                 console.log('copy', data.node.id);
-                let objData={
+                let objData = {
                     parent: data.node.parent,
                     text: data.node.text,
                     type: data.node.type,
                     data: {database_connection: data.node.data.database_connection}
                 }
-                try{
+                try {
                     let newDatabaseConnection = await addDatabaseConnection(objData)
                     data.instance.set_id(data.node, newDatabaseConnection.id);
                     data.instance.refresh();
-                }catch(e){
+                } catch (e) {
                     console.log(e)
                     data.instance.refresh();
                 }
             })
             .on('dblclick', '.jstree-anchor', async function (e) {
-                // let node = jQuery(e.target).closest("li");
-                // let id = node[0].id;
-                // let data = jQuery(treeElement).jstree().get_node(id)
-                // let instance = jQuery(treeElement).jstree()
-                // $('#tree').jstree(true).get_node("some_node_id").data.obj.asdf;
-                // jQuery(treeElement).jstree(true).get_node(li[0].id).data.asdf = "some other value";
-
                 let li = jQuery(e.target).closest("li"); // Get the closest list item (node element)
                 let instance = jQuery.jstree.reference(treeElement);
                 let nodeId = li[0].id
                 let node = instance.get_node(nodeId); // Get the node
+                if (node.type === 'database_connection') {
 
-                let formData = {
-                    name: node.text,
-                    database_connection: node.data.database_connection
-                }
 
-                try {
-                    let updatedData = await dialogDbConnection.openDialog(formData);
-                    node.data.database_connection = updatedData.database_connection
-                    instance.rename_node(node, updatedData.name);
-                    await repo(DatabaseConnectionTree).update(nodeId, {
-                        text: updatedData.name,
-                        data: {database_connection: updatedData.database_connection}
-                    })
-                } catch (e) {
-                    console.log(e)
-                    instance.refresh();
+                    let formData = {
+                        name: node.text,
+                        database_connection: node.data.database_connection
+                    }
+
+                    try {
+                        let updatedData = await dialogDbConnection.openDialog(formData);
+                        node.data.database_connection = updatedData.database_connection
+                        instance.rename_node(node, updatedData.name);
+                        await repo(DatabaseConnectionTree).update(nodeId, {
+                            text: updatedData.name,
+                            data: {database_connection: updatedData.database_connection}
+                        })
+                    } catch (e) {
+                        console.log(e)
+                        instance.refresh();
+                    }
                 }
             })
             .on('changed.jstree', function (e, data) {
-                // if (data && data.selected && data.selected.length) {
-                    // console.log('changed', data.node.original);
-                    // jQuery.get('?operation=get_content&id=' + data.selected.join(':'), function (d) {
-                    //     if(d && typeof d.type !== 'undefined') {
-                    //         jQuery('#data .content').hide();
-                    //         switch(d.type) {
-                    //             case 'text':
-                    //             case 'txt':
-                    //             case 'md':
-                    //             case 'htaccess':
-                    //             case 'log':
-                    //             case 'sql':
-                    //             case 'php':
-                    //             case 'js':
-                    //             case 'json':
-                    //             case 'css':
-                    //             case 'html':
-                    //                 jQuery('#data .code').show();
-                    //                 jQuery('#code').val(d.content);
-                    //                 break;
-                    //             case 'png':
-                    //             case 'jpg':
-                    //             case 'jpeg':
-                    //             case 'bmp':
-                    //             case 'gif':
-                    //                 jQuery('#data .image img').one('load', function () { jQuery(this).css({'marginTop':'-' + jQuery(this).height()/2 + 'px','marginLeft':'-' + jQuery(this).width()/2 + 'px'}); }).attr('src',d.content);
-                    //                 jQuery('#data .image').show();
-                    //                 break;
-                    //             default:
-                    //                 jQuery('#data .default').html(d.content).show();
-                    //                 break;
-                    //         }
-                    //     }
-                    // });
-                // } else {
-                //     // console.log('else', data);
-                // }
+                if (data && data.selected && data.selected.length) {
+                    console.log('changed', data.node.id);
+                } else {
+                    //  console.log('else', data);
+                }
             });
     });
 </script>

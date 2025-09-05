@@ -26,7 +26,13 @@
     };
     let open = false;
 
-    // Expose a function to open the dialog and get a Promise
+
+    /**
+     * Opens a dialog, optionally initializing it with provided data.
+     *
+     * @param {Object} [data] - Optional data to prefill the form within the dialog.
+     * @return {Promise} A promise that resolves or rejects based on dialog interaction.
+     */
     export function openDialog(data) {
         open = true;
         if (data) {
@@ -37,13 +43,24 @@
         });
     }
 
-    // Handle successful form submission
+
+    /**
+     * Handles form submission by resolving the formData and closing the dialog.
+     *
+     * @return {void} This method does not return a value.
+     */
     function handleSubmit() {
         promise.resolve(formData);
         open = false; // Close the dialog
     }
 
-    // Handle cancellation or dialog close
+
+    /**
+     * Handles the cancellation of an operation, typically triggered by closing a dialog or modal.
+     *
+     * @param {Event} event - The event object associated with the cancellation action.
+     * @return {void} This function does not return any value.
+     */
     function handleCancel(event) {
         promise.reject("Dialog closed by user");
         open = false;
