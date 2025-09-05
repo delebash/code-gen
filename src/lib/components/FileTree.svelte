@@ -117,8 +117,8 @@
                     idsToDelete.push(data.node.id)
                     idsToDelete.push(...immediateChildrenIds)
                     if (data.node.id === "1") {
-                        console.log('root node')
-                        //You can't delete root node with id="1"
+                        console.log('You can not delete root folder')
+                        //You can't delete root folder with id="1"
                         isAlertDialogOpen = true
                     } else {
                         for (let id of idsToDelete) {
@@ -134,67 +134,17 @@
                 }
             })
             .on('create_node.jstree', function (e, data) {
-                // console.log('create', data.node.text);
-                // let parentNode = data.instance.get_node(data.node.parent);
-                // let isDuplicate = checkDuplicateNode('rename_node', data.node, parentNode, data.instance)
-                // if(isDuplicate) {
-                //     data.instance.delete_node(data.node);
-                //     alert('Duplicate node name found. Node not added.')
-                // }
+                console.log('create', data.node.text);
+                let newData = renameDuplicate(data)
+                let newPath = newData.instance.get_path(newData.node, "/");
+                FileController.createFileFolder(newPath, newData.node.type)
             })
             .on('rename_node.jstree', function (e, data) {
                 console.log('rename ', data.node.text);
-                //The unique plugin will not work here because we are manually renaming the node for files
-                /**
-                 * Handles the renaming of a node within a tree structure. Ensures that file extensions are added
-                 * if missing, and resolves naming conflicts by appending a numeric suffix to create a unique name
-                 * among sibling nodes.
-                 *
-                 * @param {Event} e - The event object associated with the rename action.
-                 * @param {Object} data - An object containing details about the node being renamed and its context.
-                 * @param {Object} data.node - The node object that is being renamed.
-                 * @param {string} data.node.text - The current name of the node.
-                 * @param {string} data.node.type - The type of the node (e.g., 'ejs-file', 'json-file', 'folder').
-                 * @param {string} data.node.parent - The identifier of the parent node.
-                 * @param {Object} data.instance - The instance of the tree controlling the node.
-                 * @param {Function} data.instance.get_node - Function to retrieve a node object by its identifier.
-                 * @param {Function} data.instance.set_text - Function to update the name (text) of a node.
-                 */
-                //Add ext if not exists
-                if (Utils.getFileExtension(data.node.text) === "") {
-                    console.log(data.node.text);
-                    if (data.node.type === 'ejs-file') {
-                        data.instance.set_text(data.node, data.node.text + '.ejs');
-                        console.log('add .ext', data.node.text);
-                    } else if (data.node.type === 'json-file') {
-                        data.instance.set_text(data.node, data.node.text + '.json');
-                        console.log('add .ext', data.node.text);
-                    }
-                }
-
-                const parentNode = data.instance.get_node(data.node.parent);
-                const siblingNames = parentNode.children
-                    .map(childId => data.instance.get_node(childId).text);
-
-                const newName = data.node.text;
-                const type = data.node.type;
-                const ext = Utils.getFileExtension(newName);
-                const newNameWithoutExt = Utils.getFilenameWithoutExtension(newName);
-                // Check for duplicates, excluding the node being renamed
-                if (siblingNames.filter(name => name === newName).length > 1) {
-                    console.log('duplicate found');
-                    let finalName = newName;
-                    let counter = 1;
-                    while (siblingNames.includes(finalName)) {
-                        if (type === "folder") {
-                            finalName = `${newNameWithoutExt} ${counter++}`;
-                        } else {
-                            finalName = `${newNameWithoutExt} ${counter++}.${ext}`;
-                        }
-                    }
-                    // Rename the node with the unique name
-                    data.instance.set_text(data.node, finalName);
-                }
+                let oldName = data.old
+                let newData = renameDuplicate(data)
+                let newPath = newData.instance.get_path(newData.node, "/");
+                FileController.renameFileFolder(oldName, newPath, newData.node.type)
             })
             .on('move_node.jstree', function (e, data) {
                 console.log('move ', data.node.text);
@@ -238,6 +188,45 @@
             });
     });
 
+    function renameDuplicate(data) {
+
+        //Unique plugin does not work when manually changing node
+        //Add ext if not exists
+        if (Utils.getFileExtension(data.node.text) === "") {
+            if (data.node.type === 'ejs-file') {
+                data.instance.set_text(data.node, data.node.text + '.ejs');
+            } else if (data.node.type === 'json-file') {
+                data.instance.set_text(data.node, data.node.text + '.json');
+            }
+        }
+
+        const parentNode = data.instance.get_node(data.node.parent);
+        const siblingNames = parentNode.children
+            .map(childId => data.instance.get_node(childId).text);
+
+        const newName = data.node.text;
+        const type = data.node.type;
+        const ext = Utils.getFileExtension(newName);
+        let duplicate = false;
+        const newNameWithoutExt = Utils.getFilenameWithoutExtension(newName);
+        // Check for duplicates, excluding the node being renamed
+        if (siblingNames.filter(name => name === newName).length > 1) {
+            duplicate = true;
+            let finalName = newName;
+            let counter = 1;
+            while (siblingNames.includes(finalName)) {
+                if (type === "folder") {
+                    finalName = `${newNameWithoutExt} ${counter++}`;
+                } else {
+                    finalName = `${newNameWithoutExt} ${counter++}.${ext}`;
+                }
+            }
+            // Rename the node with the unique name
+            data.instance.set_text(data.node, finalName);
+            return data;
+        }
+        return data;
+    }
 </script>
 <div bind:this={treeElement}></div>
 <AlertDialog.Root bind:open={isAlertDialogOpen}>

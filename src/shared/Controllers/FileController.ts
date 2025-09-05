@@ -51,18 +51,14 @@ export class FileController {
     }
 
 
-    /**
-     * Renames a file or a directory from the specified old path to the new path.
-     * This operation is performed based on the given type.
-     *
-     * @param {string} oldPath - The existing path of the file or directory to be renamed.
-     * @param {string} newPath - The new path to which the file or directory should be renamed.
-     * @param {string} type - The type of the operation (e.g., file or directory).
-     * @return {void} No return value.
-     */
     @BackendMethod({allowed: true})
-    static createRename(oldPath,newPath,type) {
-      FileUtils.createRename(oldPath,newPath,type)
+    static renameFileFolder(oldName,newPath) {
+      FileUtils.renameFileFolder(oldName,newPath)
+    }
+
+    @BackendMethod({allowed: true})
+    static createFileFolder(newPath,type) {
+        FileUtils.createFileFolder(newPath,type)
     }
 
 

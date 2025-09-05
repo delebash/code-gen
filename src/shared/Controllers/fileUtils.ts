@@ -1,11 +1,9 @@
-import fs from "fs";
 import path from 'path';
-
+import fs from 'fs';
 /**
  * Utility class for handling file and directory-related operations.
  */
 export class FileUtils {
-
     /**
      * Writes data to a specified file.
      *
@@ -111,16 +109,7 @@ export class FileUtils {
     }
 
 
-    /**
-     * Creates or renames a file or folder based on the specified parameters.
-     * If the old path exists, it renames the file or folder. If the old path does not exist, it creates a new file or folder.
-     *
-     * @param {string} oldName - The current name of the file or folder.
-     * @param {string} newPath - The desired new path and name for the file or folder.
-     * @param {string} type - The type of the entity being handled, either 'file' or 'folder'.
-     * @return {void} This method does not return a value.
-     */
-    static createRename(oldName, newPath, type) {
+    static renameFileFolder(oldName, newPath) {
         const currentWorkingDirectory = process.cwd();
         let lastSlashIndex = newPath.lastIndexOf('/');
         let oldPath
@@ -133,29 +122,51 @@ export class FileUtils {
         }
         const oldFullPath = path.join(currentWorkingDirectory, oldPath);
         const newFullPath = path.join(currentWorkingDirectory, newPath);
-        console.log(oldFullPath)
-        console.log(newFullPath)
 
-        const oldPathExists = this.fileFolderExists(oldFullPath)
+
+       const oldPathExists = this.fileFolderExists(oldFullPath)
+        // if (!fs.existsSync(oldFullPath)) {
+        //     throw new Error('Folder does exists');
+        // }
+
+        // if (fs.lstatSync(oldFullPath).isDirectory()) {
+        //     fs.copySync(oldFullPath, newFullPath);
+        //     fs.rmdirSync(oldFullPath, { recursive: true });
+        //     console.log(`Folder renamed from ${oldFullPath} to ${newFullPath}`);
+        // } else if (fs.lstatSync(oldFullPath).isFile()) {
+        //     fs.renameSync(oldFullPath, newFullPath);
+        //     console.log(`File renamed from ${oldFullPath} to ${newFullPath}`);
+        // }
+
         try {
             if (oldPathExists) {
                 //Rename
                 fs.renameSync(oldPath, newPath);
-                console.log('File or Folder renamed');
+                console.log(`File or Folder renamed from ${oldFullPath} to ${newFullPath}`);
             } else {
-
-                if (type === 'folder') {
-                    fs.mkdirSync(newFullPath);
-                } else {
-                    fs.writeFileSync(newFullPath, '');
-                }
-                console.log('File or Folder created');
+                throw new Error(`${oldFullPath} does not exist, cannot rename`);
             }
         } catch (err) {
-            console.error('Error renaming or creating file:', err);
+            console.error('Error renaming file:', err);
         }
     }
 
+
+    static createFileFolder(newPath, type) {
+        const currentWorkingDirectory = process.cwd();
+        const newFullPath = path.join(currentWorkingDirectory, newPath);
+
+        try {
+            if (type === 'folder') {
+                fs.mkdirSync(newFullPath);
+            } else {
+                fs.writeFileSync(newFullPath, '');
+            }
+            console.log(`File or Folder created ${newFullPath}`)
+        } catch (err) {
+            console.error('Error creating file or folder' + newFullPath, err);
+        }
+    }
 
     /**
      * Deletes a file or folder at the specified path.
@@ -182,7 +193,6 @@ export class FileUtils {
             if (err.code !== 'ENOENT') {    // Check if the error is not because the file or folder does not exist
                 console.error('Error deleting folder file:', err);
             }
-
         }
     }
 }
