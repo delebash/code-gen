@@ -14,7 +14,6 @@
     let isAlertDialogOpen = $state(false);
     let treeElement; // This will be a reference to our DOM element
 
-
     onMount(async () => {
         FileController.buildFileTreeMethod('./data')
         const jstree = await import('jstree');
