@@ -20,6 +20,13 @@ export class FileUtils {
         }
     }
 
+    static makeDirectory(path) {
+        if (fs.existsSync(path)) {
+            console.log('Directory exists:', path);
+        }else{
+            fs.mkdirSync(path);
+        }
+    }
     /**
      * Reads the content of a file at the specified path with UTF-8 encoding.
      *

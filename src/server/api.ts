@@ -4,7 +4,7 @@ import {JsonEntityFileStorage} from "remult/server"
 import {DatabaseConnectionTree} from "../shared/Entities/DatabaseConnectionTree";
 import {repo} from "remult";
 import {FileController} from "../shared/Controllers/FileController";
-
+import {FileUtils} from "../shared/Controllers/fileUtils"
 
 
 export const api = remultApi({
@@ -12,10 +12,11 @@ export const api = remultApi({
         new JsonDataProvider(new JsonEntityFileStorage("./db")
         ),
     entities: [DatabaseConnectionTree],
-    controllers:[FileController],
+    controllers: [FileController],
     admin: true,
     initApi: async () => {
-        // await repo(Task).deleteMany({ where: { id: { $ne: '-1' } } })
+        FileUtils.makeDirectory("data")
+        FileUtils.makeDirectory("db")
     },
 
 });
