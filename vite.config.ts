@@ -3,7 +3,7 @@ import tailwindcss from "@tailwindcss/vite";
 import Icons from "unplugin-icons/vite";
 import { defineConfig } from "vite";
 import { kitRoutes } from "vite-plugin-kit-routes";
-import { stripper } from "vite-plugin-stripper";
+// import { stripper } from "vite-plugin-stripper";
 
 export default defineConfig({
   plugins: [
