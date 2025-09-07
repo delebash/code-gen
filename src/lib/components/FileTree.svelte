@@ -5,7 +5,7 @@
     import icon_json from '$lib/assets/icons/icons8-curly-brackets-24.png';
     import icon_folder from '$lib/assets/icons/icons8-folder-24.png';
     import icon_ejs from '$lib/assets/icons/icons8-ejs-24.png';
-    import {FileController} from "../../shared/Controllers/FileController.ts";
+    import {ServerSideController} from "../../shared/Controllers/ServerSideController.ts";
     import {repo} from "remult";
     import {DatabaseConnectionTree} from "../../shared/Entities/DatabaseConnectionTree.js";
     import * as AlertDialog from "$lib/components/ui/alert-dialog/index.js"
@@ -15,7 +15,7 @@
     let treeElement; // This will be a reference to our DOM element
 
     onMount(async () => {
-        FileController.buildFileTreeMethod('./data')
+        ServerSideController.buildFileTreeMethod('./data')
         const jstree = await import('jstree');
 
         jQuery(treeElement).jstree({
@@ -123,7 +123,7 @@
                             let node = data.instance.get_node(id)
                             let path = data.instance.get_path(node, "/");
                             let type = node.type
-                            FileController.deleteFileFolderMethod(path, type)
+                            ServerSideController.deleteFileFolderMethod(path, type)
                         }
                     }
                 } catch (e) {
@@ -135,14 +135,20 @@
                 console.log('create', data.node.text);
                 let newData = renameDuplicate(data)
                 let newPath = newData.instance.get_path(newData.node, "/");
-                FileController.createFileFolderMethod(newPath, newData.node.type)
+                ServerSideController.createFileFolderMethod(newPath, newData.node.type)
             })
-            .on('rename_node.jstree', function (e, data) {
+            .on('rename_node.jstree', async function (e, data) {
                 console.log('rename ', data.node.text);
                 let oldName = data.old
                 let newData = renameDuplicate(data)
                 let newPath = newData.instance.get_path(newData.node, "/");
-                FileController.renameFileFolderMethod(oldName, newPath, newData.node.type)
+                try{
+                    let results =  await ServerSideController.renameFileFolderMethod(oldName, newPath)
+                    console.log(results)
+                }catch(e){
+                    console.log(e)
+                }
+
             })
             .on('move_node.jstree', function (e, data) {
                 console.log('move ', data.node.text);

@@ -2,19 +2,19 @@ import { remultApi } from "remult/remult-sveltekit";
 import { JsonDataProvider } from "remult";
 import { JsonEntityFileStorage } from "remult/server";
 import { DatabaseConnectionTree } from "../shared/Entities/DatabaseConnectionTree";
-import { FileController } from "../shared/Controllers/FileController";
-import { FileUtils } from "../shared/Controllers/fileUtils";
+import { ServerSideController } from "../shared/Controllers/ServerSideController";
+import { ServerSideFunctions } from "../shared/Controllers/serverSideFunctions";
 
 export const api = remultApi({
   dataProvider: async () =>
     new JsonDataProvider(new JsonEntityFileStorage("./db")),
   entities: [DatabaseConnectionTree],
-  controllers: [FileController],
+  controllers: [ServerSideController],
   admin: true,
   initApi: async () => {
-    FileUtils.makeDirectory("data");
-    FileUtils.makeDirectory("db");
+    ServerSideFunctions.makeDirectory("data");
+    ServerSideFunctions.makeDirectory("db");
 
-    FileController.fu = FileUtils;
+    ServerSideController.ssf = ServerSideFunctions;
   },
 });
